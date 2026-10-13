@@ -16,7 +16,7 @@
     "lucide-react": "^1.28.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
-    "react-draggable": "^4.7.1",
+    "react-draggable": "^4.7.2",
     "tailwindcss": "^4.3.3"
   },
   "devDependencies": {
