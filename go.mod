@@ -7,7 +7,7 @@ require (
 	github.com/getlantern/systray v1.2.2
 	github.com/itchyny/volume-go v0.2.3
 	github.com/shirou/gopsutil/v4 v4.26.7
-	github.com/wailsapp/wails/v2 v2.13.0
+	github.com/wailsapp/wails/v2 v2.16.0
 )
 
 require (
