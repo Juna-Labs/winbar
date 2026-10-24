@@ -13,6 +13,7 @@ const Terminal = lazy(() => import('../modules/terminal/Terminal'));
 const Launcher = lazy(() => import('../modules/launcher/Launcher'));
 const TimeHub = lazy(() => import('../modules/timehub/TimeHub'));
 const Calculator = lazy(() => import('../modules/calculator/Calculator'));
+const Clipboard = lazy(() => import('../modules/clipboard/Clipboard'));
 
 const FallbackLoader = () => (
     <div className="flex items-center justify-center p-4">
@@ -49,6 +50,8 @@ const ModuleRenderer = ({ name }) => {
                 return <TimeHub />;
             case 'calculator':
                 return <Calculator />;
+            case 'clipboard':
+                return <Clipboard />;
             default:
                 return <div className="p-4 bg-red-500/20 text-red-500 rounded-lg">Unknown Module: {name}</div>;
         }
