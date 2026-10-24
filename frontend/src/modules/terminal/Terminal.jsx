@@ -8,17 +8,6 @@ const TerminalModule = () => {
 
     return (
         <div className="p-6 text-white flex flex-col justify-center items-center text-center gap-4 min-w-80">
-            <div className="flex justify-between items-center w-full mb-2 drag-handle cursor-move absolute top-0 left-0 p-4">
-                <h2 className="text-xs font-bold text-white/50 uppercase tracking-wider flex items-center gap-2">
-                    <SquareTerminal />
-                    Command Line
-                </h2>
-            </div>
-
-            <div className="bg-white/5 p-4 rounded-full mb-2 mt-8">
-                <SquareTerminal color='#3574DE' />
-            </div>
-
             <div>
                 <h2 className="text-xl font-bold mb-1">Windows Terminal</h2>
                 <p className="text-xs text-white/50">Launch a native shell instance</p>
@@ -30,7 +19,7 @@ const TerminalModule = () => {
                         LaunchTerminal("");
                         EventsEmit("toggle_dashboard");
                     }}
-                    className="w-full py-2 bg-[#3b82f6]/20 hover:bg-[#3b82f6]/40 border border-[#3b82f6]/50 transition-all rounded-lg font-medium text-sm flex items-center justify-center gap-2 text-[#60a5fa]"
+                    className="w-full py-2 hover:bg-[#3b82f6]/40 border border-[#3b82f6]/50 transition-all rounded-lg font-medium text-sm flex items-center justify-center gap-2 text-[#60a5fa]"
                 >
                     Launch Terminal
                 </button>
