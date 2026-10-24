@@ -101,8 +101,17 @@ export default function useTodo() {
         saveTodos(todos.filter(t => t.id !== id));
     };
 
-    const editTask = (id, newText) => {
-        saveTodos(todos.map(t => t.id === id ? { ...t, text: newText } : t));
+    const editTask = (id, newText, newDate) => {
+        saveTodos(todos.map(t => {
+            if (t.id === id) {
+                return {
+                    ...t,
+                    text: newText,
+                    ...(newDate !== undefined ? { date: newDate } : {})
+                };
+            }
+            return t;
+        }));
     };
 
     return {

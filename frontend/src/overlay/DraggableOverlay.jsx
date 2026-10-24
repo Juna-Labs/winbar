@@ -209,7 +209,7 @@ export default function DraggableOverlay({ overlayId, title, modules = [], overl
     const activeCategoryModules = modules.filter(m => (CATEGORY_MAP[m] || 'Other') === activeTab);
 
     return (
-        <div className="flex-1 w-full relative p-4 animate-in fade-in duration-300 pointer-events-none overflow-hidden">
+        <div className="flex-1 w-full relative p-2 animate-in fade-in duration-300 pointer-events-none overflow-hidden">
             {!overlayTransparent && modules.length > 0 && (
                 <>
                     {/* Left: Clean Layout */}
