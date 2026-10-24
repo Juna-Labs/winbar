@@ -2,15 +2,21 @@ package helper
 
 import (
 	"crypto/md5"
+	"crypto/rand"
 	"encoding/hex"
-	"math/rand/v2"
+	"math/big"
 )
 
 func GenerateSalt(n int) string {
 	letters := []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
 	s := make([]rune, n)
+	maxLen := big.NewInt(int64(len(letters)))
 	for i := range s {
-		s[i] = letters[rand.IntN(len(letters))]
+		idx, err := rand.Int(rand.Reader, maxLen)
+		if err != nil {
+			continue
+		}
+		s[i] = letters[idx.Int64()]
 	}
 
 	return string(s)
