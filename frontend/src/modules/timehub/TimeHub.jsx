@@ -202,11 +202,17 @@ export default function TimeHub() {
                 })}
             </div>
 
-            {/* Active Sub-view Container */}
+            {/* Active Sub-view Container (Keep mounted to preserve state/timers) */}
             <div className="flex-1 overflow-hidden flex flex-col relative border-l border-white/10">
-                {activeTab === 'timer' && <TimerView soundEnabled={soundEnabled} />}
-                {activeTab === 'stopwatch' && <StopwatchView />}
-                {activeTab === 'alarm' && <AlarmView />}
+                <div className={`flex-1 flex flex-col ${activeTab === 'timer' ? '' : 'hidden'}`}>
+                    <TimerView soundEnabled={soundEnabled} />
+                </div>
+                <div className={`flex-1 flex flex-col ${activeTab === 'stopwatch' ? '' : 'hidden'}`}>
+                    <StopwatchView />
+                </div>
+                <div className={`flex-1 flex flex-col ${activeTab === 'alarm' ? '' : 'hidden'}`}>
+                    <AlarmView />
+                </div>
             </div>
 
             {/* Resizing grip indicator */}

@@ -8,29 +8,32 @@ export default function StopwatchView() {
 
     const startTimeRef = useRef(0);
     const accumulatedTimeRef = useRef(0);
-    const requestRef = useRef(null);
 
-    const updateTimer = () => {
-        setElapsedTime(accumulatedTimeRef.current + (performance.now() - startTimeRef.current));
-        requestRef.current = requestAnimationFrame(updateTimer);
-    };
+    useEffect(() => {
+        let interval = null;
+        if (isRunning) {
+            interval = setInterval(() => {
+                setElapsedTime(accumulatedTimeRef.current + (performance.now() - startTimeRef.current));
+            }, 30);
+        }
+        return () => {
+            if (interval) clearInterval(interval);
+        };
+    }, [isRunning]);
 
     const handleStart = () => {
-        setIsRunning(true);
         startTimeRef.current = performance.now();
-        requestRef.current = requestAnimationFrame(updateTimer);
+        setIsRunning(true);
     };
 
     const handlePause = () => {
         setIsRunning(false);
-        cancelAnimationFrame(requestRef.current);
         accumulatedTimeRef.current += performance.now() - startTimeRef.current;
         setElapsedTime(accumulatedTimeRef.current);
     };
 
     const handleReset = () => {
         setIsRunning(false);
-        cancelAnimationFrame(requestRef.current);
         accumulatedTimeRef.current = 0;
         setElapsedTime(0);
         setLaps([]);
@@ -49,12 +52,6 @@ export default function StopwatchView() {
 
         setLaps([newLap, ...laps]);
     };
-
-    useEffect(() => {
-        return () => {
-            if (requestRef.current) cancelAnimationFrame(requestRef.current);
-        };
-    }, []);
 
     // Format milliseconds into MM:SS.cs (centiseconds)
     const formatStopwatch = (ms) => {
