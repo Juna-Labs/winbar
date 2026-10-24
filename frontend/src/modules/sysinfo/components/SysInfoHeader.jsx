@@ -35,10 +35,19 @@ export default function SysInfoHeader({ refreshRate, setRefreshRate }) {
                                     }}
                                     className="w-full text-left px-4 py-2 text-sm flex items-center justify-between hover:bg-white/10 transition-colors"
                                 >
-                                    <span className={refreshRate === opt.value ? "text-cyan-400 font-medium" : "text-white/80"}>
+                                    <span
+                                        className={refreshRate === opt.value ? "text-widget-active font-medium" : "text-white/80"}
+                                        style={refreshRate === opt.value ? { color: 'var(--color-widget-active)' } : {}}
+                                    >
                                         {opt.label}
                                     </span>
-                                    {refreshRate === opt.value && <Check size={14} className="text-cyan-400" />}
+                                    {refreshRate === opt.value && (
+                                        <Check
+                                            size={14}
+                                            className="text-widget-active"
+                                            style={{ color: 'var(--color-widget-active)' }}
+                                        />
+                                    )}
                                 </button>
                             ))}
                         </div>

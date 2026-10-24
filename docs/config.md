@@ -86,6 +86,11 @@ Available modules:
 - `container`: Docker/container monitoring.
 - `terminal`: A CLI terminal launcher that can automatically launch your server terminal (The server private key is needed to work)
 
+---
+- `timehub`: Time suite containing a Countdown Timer, Pomodoro focus mode, Stopwatch with lap timing, and persistent Alarms.
+- `calculator`: Fast desktop calculator with calculation history and quick multi-unit converter (Programmer bases, Storage, CSS rem/px, and physical units).
+- `clipboard`: Lightweight clipboard history manager remembering up to 20 copied text items and up to 5 copied images with instant 1-click re-copy.
+
 ## Additional Settings
 
 - `theme`: Set the active theme name (e.g., `default`).

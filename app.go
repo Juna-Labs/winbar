@@ -99,7 +99,7 @@ func (a *App) startup(ctx context.Context) {
 			Left:   0,
 			Top:    0,
 			Right:  screenWidth,
-			Bottom: 40,
+			Bottom: 50,
 		},
 	}
 	_, _, _ = proc.Call(uintptr(ABM_NEW), uintptr(unsafe.Pointer(&abb)))

@@ -16,22 +16,19 @@ const ServerInfo = () => {
                 <StatCard
                     label="CPU"
                     value={stats.cpu_usage}
-                    color="#3b82f6"
-                    icon={<Cpu size={24} className="text-[#3b82f6]" strokeWidth={1.5} />}
+                    icon={<Cpu size={24} strokeWidth={1.5} />}
                 />
                 <StatCard
                     label="RAM"
                     value={stats.ram_usage}
                     subtext={`${formatBytes(stats.ram_used)} / ${formatBytes(stats.ram_total)}`}
-                    color="#a855f7"
-                    icon={<MemoryStick size={24} className="text-[#a855f7]" strokeWidth={1.5} />}
+                    icon={<MemoryStick size={24} strokeWidth={1.5} />}
                 />
                 <StatCard
                     label="Storage"
                     value={stats.disk_usage}
                     subtext={`${formatBytes(stats.disk_used)} / ${formatBytes(stats.disk_total)}`}
-                    color="#f97316"
-                    icon={<HardDrive size={24} className="text-[#f97316]" strokeWidth={1.5} />}
+                    icon={<HardDrive size={24} strokeWidth={1.5} />}
                 />
             </div>
         </div>

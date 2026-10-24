@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Plus, X, Pencil, Check } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Plus, X, Pencil, Check, Calendar } from 'lucide-react';
 
 const Column = ({ title, status, todos, updateTaskStatus, deleteTask, editTask }) => {
     const handleDragOver = (e) => {
@@ -58,12 +58,34 @@ const Column = ({ title, status, todos, updateTaskStatus, deleteTask, editTask }
 const TaskCard = ({ task, handleDragStart, handleDragEnd, deleteTask, editTask }) => {
     const [isEditing, setIsEditing] = useState(false);
     const [text, setText] = useState(task.text);
+    const [date, setDate] = useState(task.date || '');
+
+    useEffect(() => {
+        if (!isEditing) {
+            setText(task.text);
+            setDate(task.date || '');
+        }
+    }, [task.text, task.date, isEditing]);
+
+    const handleStartEdit = () => {
+        setText(task.text);
+        setDate(task.date || '');
+        setIsEditing(true);
+    };
+
+    const handleCancel = () => {
+        setText(task.text);
+        setDate(task.date || '');
+        setIsEditing(false);
+    };
 
     const handleSave = () => {
         if (text.trim()) {
-            editTask(task.id, text.trim());
+            const isNormal = task.type === 'normal' || !task.type;
+            editTask(task.id, text.trim(), isNormal ? (date || null) : task.date);
         } else {
             setText(task.text);
+            setDate(task.date || '');
         }
         setIsEditing(false);
     };
@@ -76,34 +98,93 @@ const TaskCard = ({ task, handleDragStart, handleDragEnd, deleteTask, editTask }
             className="group bg-white/5 border border-white/10 rounded p-2 shadow-sm cursor-grab active:cursor-grabbing hover:shadow-md transition-shadow relative"
         >
             {isEditing ? (
-                <div className="flex items-center gap-1">
-                    <input
-                        type="text"
-                        value={text}
-                        onChange={(e) => setText(e.target.value)}
-                        onKeyDown={(e) => e.key === 'Enter' && handleSave()}
-                        className="w-full bg-transparent border-b border-widget outline-none text-white font-['Caveat'] text-xl"
-                        autoFocus
-                    />
-                    <button onClick={handleSave} className="text-green-400 p-1 hover:bg-white/10 rounded">
-                        <Check size={14} />
-                    </button>
-                </div>
-            ) : (
-                <div className="flex justify-between items-start gap-2">
-                    <span className="font-['Caveat'] text-xl leading-5 text-white wrap-break-word">{task.text}</span>
-                    <div className="flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button onClick={() => setIsEditing(true)} className="text-white/50 hover:text-white">
-                            <Pencil size={12} />
+                <div className="flex flex-col gap-2">
+                    <div className="flex items-center gap-1">
+                        <input
+                            type="text"
+                            value={text}
+                            onChange={(e) => setText(e.target.value)}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter') handleSave();
+                                if (e.key === 'Escape') handleCancel();
+                            }}
+                            className="w-full bg-transparent border-b border-widget outline-none text-white font-['Caveat'] text-xl"
+                            autoFocus
+                        />
+                        <button
+                            type="button"
+                            onClick={handleSave}
+                            className="text-green-400 hover:text-green-300 p-1 hover:bg-white/10 rounded transition-colors shrink-0"
+                            title="Save"
+                        >
+                            <Check size={14} />
                         </button>
-                        <button onClick={() => deleteTask(task.id)} className="text-red-400/50 hover:text-red-400">
-                            <X size={12} />
+                        <button
+                            type="button"
+                            onClick={handleCancel}
+                            className="text-white/40 hover:text-red-400 p-1 hover:bg-white/10 rounded transition-colors shrink-0"
+                            title="Cancel"
+                        >
+                            <X size={14} />
                         </button>
                     </div>
+
+                    {(task.type === 'normal' || !task.type) && (
+                        <div className="flex items-center justify-between gap-1 pt-1.5 border-t border-white/10">
+                            <div className="flex items-center gap-1 text-[10px] text-white/50 font-sans uppercase tracking-wider">
+                                <Calendar size={11} />
+                                <span>Date</span>
+                            </div>
+                            <input
+                                type="date"
+                                value={date || ''}
+                                onChange={(e) => setDate(e.target.value)}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter') handleSave();
+                                    if (e.key === 'Escape') handleCancel();
+                                }}
+                                className="bg-black/25 hover:bg-black/40 border border-white/15 focus:border-widget rounded px-1.5 py-0.5 text-xs text-white/80 font-sans outline-none scheme-dark transition-colors cursor-pointer"
+                            />
+                        </div>
+                    )}
                 </div>
-            )}
-            {task.type === 'normal' && task.date && (
-                <div className="text-[10px] text-white/40 text-right mt-1 font-sans">{task.date}</div>
+            ) : (
+                <>
+                    <div className="flex justify-between items-start gap-2">
+                        <span
+                            onDoubleClick={handleStartEdit}
+                            className="font-['Caveat'] text-xl leading-5 text-white wrap-break-word cursor-text"
+                            title="Double-click to edit"
+                        >
+                            {task.text}
+                        </span>
+                        <div className="flex flex-row gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                            <button
+                                onClick={handleStartEdit}
+                                className="text-white/50 hover:text-white p-0.5"
+                                title="Edit task"
+                            >
+                                <Pencil size={12} />
+                            </button>
+                            <button
+                                onClick={() => deleteTask(task.id)}
+                                className="text-red-400/50 hover:text-red-400 p-0.5"
+                                title="Delete task"
+                            >
+                                <X size={12} />
+                            </button>
+                        </div>
+                    </div>
+                    {(task.type === 'normal' || !task.type) && task.date && (
+                        <div
+                            onDoubleClick={handleStartEdit}
+                            className="text-[10px] text-white/40 text-right mt-1 font-sans cursor-pointer hover:text-white/70 transition-colors"
+                            title="Double-click to edit"
+                        >
+                            {task.date}
+                        </div>
+                    )}
+                </>
             )}
         </div>
     );
@@ -111,43 +192,51 @@ const TaskCard = ({ task, handleDragStart, handleDragEnd, deleteTask, editTask }
 
 const RecurringListView = ({ todos, updateTaskStatus, deleteTask }) => {
     return (
-        <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-3 scrollable">
+        <div className="flex-1 overflow-y-auto p-3 flex flex-col gap-2.5 scrollable">
             {todos.map(task => {
                 const isDone = task.status === 'done';
 
                 return (
-                    <div key={task.id} className="flex h-20 bg-white/5 border border-white/10 rounded-lg overflow-hidden relative group shadow-sm hover:border-white/20 transition-all">
-
-                        <div className="flex-1 p-4 flex flex-col items-start justify-center border-l-4 border-l-transparent group-hover:border-l-widget transition-colors z-10 pointer-events-none">
-                            <span className={`font-sans text-lg font-medium drop-shadow-sm ${isDone ? 'text-white/60 line-through' : 'text-white'}`}>{task.text}</span>
+                    <div
+                        key={task.id}
+                        className={`flex items-center justify-between min-h-16 py-3 px-3.5 rounded-lg border transition-all relative group shadow-sm ${
+                            isDone
+                                ? 'bg-widget/15 border-widget/40'
+                                : 'bg-white/5 border-white/10 hover:border-white/20 hover:bg-white/10'
+                        }`}
+                    >
+                        {/* Task text on the left */}
+                        <div className="flex-1 min-w-0 pr-3 flex flex-col justify-center border-l-4 border-l-transparent group-hover:border-l-widget pl-2.5 transition-colors">
+                            <span className={`font-sans text-base font-medium wrap-break-word ${isDone ? 'text-white/50 line-through' : 'text-white drop-shadow-sm'}`}>
+                                {task.text}
+                            </span>
                         </div>
 
-                        {isDone ? (
-                            <div
-                                onClick={() => updateTaskStatus(task.id, 'todo')}
-                                className="absolute inset-0 bg-linear-to-l from-widget via-widget/70 to-transparent flex justify-end items-center pr-8 text-widget-text font-bold overflow-hidden cursor-pointer hover:opacity-90 transition-opacity z-0"
+                        {/* Actions on the right */}
+                        <div className="flex items-center gap-2 shrink-0">
+                            <button
+                                onClick={() => updateTaskStatus(task.id, isDone ? 'todo' : 'done')}
+                                className={`px-4 py-2 rounded font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer shadow-sm ${
+                                    isDone
+                                        ? 'bg-widget-active text-widget-text hover:opacity-85'
+                                        : 'bg-widget/25 hover:bg-widget hover:text-widget-text border border-widget/50 hover:border-widget text-white'
+                                }`}
+                                style={isDone ? {
+                                    backgroundColor: 'var(--color-widget-active)',
+                                    color: 'var(--color-widget-text)'
+                                } : {}}
+                                title={isDone ? "Mark as to-do" : "Mark as done"}
                             >
-                                <span className="absolute right-0 text-5xl font-black opacity-20 whitespace-nowrap transform -rotate-12 select-none pointer-events-none translate-x-2">COMPLETED</span>
-                                <div className="flex items-center gap-2 z-10 mr-2 drop-shadow-sm">
-                                    <Check size={20} strokeWidth={4} />
-                                    <span className="tracking-widest uppercase">Done</span>
-                                </div>
-                            </div>
-                        ) : (
-                            <div className="absolute inset-y-0 right-0 w-48 bg-linear-to-l from-black/40 to-transparent flex flex-col justify-center items-end pr-4 shrink-0 z-10 pointer-events-none">
-                                <button
-                                    onClick={() => updateTaskStatus(task.id, 'done')}
-                                    className="px-6 py-2 bg-widget/20 hover:bg-widget hover:text-widget-text border border-widget/50 hover:border-widget rounded font-bold transition-all flex items-center gap-2 text-sm text-white pointer-events-auto shadow-sm"
-                                >
-                                    <Check size={16} strokeWidth={3} />
-                                    Done
-                                </button>
-                            </div>
-                        )}
+                                <Check size={15} strokeWidth={3} />
+                                <span>Done</span>
+                            </button>
 
-                        <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 flex gap-2 transition-opacity z-20">
-                            <button onClick={() => deleteTask(task.id)} className="text-white hover:text-red-400 bg-black/40 hover:bg-black/60 p-1.5 rounded-full shadow backdrop-blur-sm transition-colors">
-                                <X size={12} strokeWidth={3} />
+                            <button
+                                onClick={() => deleteTask(task.id)}
+                                className="opacity-0 group-hover:opacity-100 text-white/40 hover:text-red-400 p-1.5 hover:bg-white/10 rounded-md transition-all cursor-pointer"
+                                title="Delete task"
+                            >
+                                <X size={14} strokeWidth={2.5} />
                             </button>
                         </div>
                     </div>
