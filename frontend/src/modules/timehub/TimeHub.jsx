@@ -1,108 +1,23 @@
-import { useState, useEffect, useRef } from 'react';
-import { Timer, Watch, Bell, Volume2, VolumeX, AlertCircle, Check, Clock } from 'lucide-react';
+import { Volume2, VolumeX, AlertCircle } from 'lucide-react';
+import useTimeHub from './hooks/useTimeHub';
 import TimerView from './components/TimerView';
 import StopwatchView from './components/StopwatchView';
 import AlarmView from './components/AlarmView';
-import { startAlarmChime, stopAlarmChime } from './utils/sound';
 
 export default function TimeHub() {
-    const [activeTab, setActiveTab] = useState('timer'); // 'timer' | 'stopwatch' | 'alarm'
-    const [soundEnabled, setSoundEnabled] = useState(true);
-    const [ringingAlarm, setRingingAlarm] = useState(null);
-
-    const lastTriggeredMinuteRef = useRef('');
-
-    // Background Alarm Monitor
-    useEffect(() => {
-        const checkAlarms = () => {
-            const now = new Date();
-            const hours = now.getHours().toString().padStart(2, '0');
-            const minutes = now.getMinutes().toString().padStart(2, '0');
-            const currentTimeStr = `${hours}:${minutes}`;
-            const currentDay = now.getDay(); // 0 is Sunday, 6 is Saturday
-
-            if (lastTriggeredMinuteRef.current === currentTimeStr) {
-                return;
-            }
-
-            try {
-                const saved = localStorage.getItem('timehub_alarms');
-                if (!saved) return;
-                const alarms = JSON.parse(saved);
-
-                const triggered = alarms.find(a => {
-                    if (!a.enabled || a.time !== currentTimeStr) return false;
-
-                    if (a.repeat === 'weekdays' && (currentDay === 0 || currentDay === 6)) {
-                        return false;
-                    }
-                    return true;
-                });
-
-                if (triggered) {
-                    lastTriggeredMinuteRef.current = currentTimeStr;
-                    setRingingAlarm(triggered);
-                    if (soundEnabled) {
-                        startAlarmChime();
-                    }
-                }
-            } catch (e) {
-                console.error("Alarm check error", e);
-            }
-        };
-
-        const interval = setInterval(checkAlarms, 1000);
-        return () => {
-            clearInterval(interval);
-            stopAlarmChime();
-        };
-    }, [soundEnabled]);
-
-    const handleDismissAlarm = () => {
-        stopAlarmChime();
-        // If it was a 'once' alarm, disable it
-        if (ringingAlarm && ringingAlarm.repeat === 'once') {
-            try {
-                const saved = localStorage.getItem('timehub_alarms');
-                if (saved) {
-                    const alarms = JSON.parse(saved);
-                    const updated = alarms.map(a => a.id === ringingAlarm.id ? { ...a, enabled: false } : a);
-                    localStorage.setItem('timehub_alarms', JSON.stringify(updated));
-                }
-            } catch (e) { }
-        }
-        setRingingAlarm(null);
-    };
-
-    const handleSnoozeAlarm = () => {
-        stopAlarmChime();
-        setRingingAlarm(null);
-
-        // Schedule snooze 5 minutes from now
-        const now = new Date(Date.now() + 5 * 60 * 1000);
-        const hours = now.getHours().toString().padStart(2, '0');
-        const minutes = now.getMinutes().toString().padStart(2, '0');
-        const snoozeTime = `${hours}:${minutes}`;
-
-        try {
-            const saved = localStorage.getItem('timehub_alarms');
-            const alarms = saved ? JSON.parse(saved) : [];
-            const snoozeAlarm = {
-                id: `snooze-${Date.now()}`,
-                time: snoozeTime,
-                label: `(Snoozed) ${ringingAlarm?.label || 'Alarm'}`,
-                enabled: true,
-                repeat: 'once'
-            };
-            localStorage.setItem('timehub_alarms', JSON.stringify([...alarms, snoozeAlarm]));
-        } catch (e) { }
-    };
-
-    const tabs = [
-        { id: 'timer', label: 'Timer', icon: Timer },
-        { id: 'stopwatch', label: 'Stopwatch', icon: Watch },
-        { id: 'alarm', label: 'Alarm', icon: Bell },
-    ];
+    const {
+        activeTab,
+        setActiveTab,
+        soundEnabled,
+        toggleSound,
+        tabs,
+        timer,
+        stopwatch,
+        alarms,
+        ringingAlarm,
+        handleDismissAlarm,
+        handleSnoozeAlarm
+    } = useTimeHub();
 
     return (
         <div
@@ -125,10 +40,7 @@ export default function TimeHub() {
                 <div className="flex items-center gap-2">
                     {/* Sound Mute/Unmute Toggle */}
                     <button
-                        onClick={() => {
-                            if (soundEnabled) stopAlarmChime();
-                            setSoundEnabled(!soundEnabled);
-                        }}
+                        onClick={toggleSound}
                         className={`p-1.5 rounded transition-colors cursor-pointer ${
                             soundEnabled ? 'text-white/80 hover:text-white hover:bg-white/10' : 'text-red-400/80 hover:bg-red-500/10'
                         }`}
@@ -202,16 +114,16 @@ export default function TimeHub() {
                 })}
             </div>
 
-            {/* Active Sub-view Container (Keep mounted to preserve state/timers) */}
+            {/* Sub-view Container (Keep mounted to preserve state across tab switches, fully driven by useTimeHub props) */}
             <div className="flex-1 overflow-hidden flex flex-col relative border-l border-white/10">
                 <div className={`flex-1 flex flex-col ${activeTab === 'timer' ? '' : 'hidden'}`}>
-                    <TimerView soundEnabled={soundEnabled} />
+                    <TimerView {...timer} />
                 </div>
                 <div className={`flex-1 flex flex-col ${activeTab === 'stopwatch' ? '' : 'hidden'}`}>
-                    <StopwatchView />
+                    <StopwatchView {...stopwatch} />
                 </div>
                 <div className={`flex-1 flex flex-col ${activeTab === 'alarm' ? '' : 'hidden'}`}>
-                    <AlarmView />
+                    <AlarmView {...alarms} />
                 </div>
             </div>
 

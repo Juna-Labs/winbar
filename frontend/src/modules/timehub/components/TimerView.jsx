@@ -1,232 +1,42 @@
-import { useState, useEffect, useRef } from 'react';
-import { Play, Pause, RotateCcw, Coffee, Brain, Sparkles, CheckCircle2, ChevronUp, ChevronDown } from 'lucide-react';
-import { playChime } from '../utils/sound';
+import { Play, Pause, RotateCcw, Coffee, Brain, Sparkles, CheckCircle2 } from 'lucide-react';
+import WheelColumn from './WheelColumn';
 
-// Vertical Sliding Number Picker Column
-const WheelColumn = ({ value, min = 0, max = 59, label, onChange }) => {
-    const range = max - min + 1;
-    const prevValue = (value - 1 - min + range) % range + min;
-    const nextValue = (value + 1 - min) % range + min;
+export default function TimerView({
+    mode,
+    setMode,
 
-    const handleWheel = (e) => {
-        e.preventDefault();
-        if (e.deltaY < 0) {
-            // Mouse wheel up -> increment
-            onChange((value + 1 - min) % range + min);
-        } else if (e.deltaY > 0) {
-            // Mouse wheel down -> decrement
-            onChange((value - 1 - min + range) % range + min);
-        }
-    };
+    // Picker
+    hours,
+    setHours,
+    minutes,
+    setMinutes,
+    seconds,
+    setSeconds,
+    handleStartFromPicker,
+    handleResetPicker,
 
-    const stepUp = () => onChange((value + 1 - min) % range + min);
-    const stepDown = () => onChange((value - 1 - min + range) % range + min);
+    // Countdown Timer
+    timerRemaining,
+    isTimerRunning,
+    isTimerActive,
+    handleCancelRunning,
+    toggleTimerRunning,
 
-    return (
-        <div
-            onWheel={handleWheel}
-            className="flex flex-col items-center select-none w-16 py-1 px-1 rounded-xl bg-black/20 border border-white/5 hover:border-white/15 transition-all group"
-        >
-            {/* Top Chevron Up */}
-            <button
-                type="button"
-                onClick={stepUp}
-                className="text-white/30 hover:text-white p-1 rounded hover:bg-white/10 transition-colors cursor-pointer"
-                title={`Increase ${label}`}
-            >
-                <ChevronUp size={16} />
-            </button>
+    // Pomodoro
+    pomoPhase,
+    pomoRemaining,
+    isPomoRunning,
+    completedCycles,
+    switchPomoPhase,
+    handleSkipPomoPhase,
+    togglePomoRunning,
 
-            {/* Upper number (Bigger / Next) */}
-            <div
-                onClick={stepUp}
-                className="text-white/30 hover:text-white/70 font-mono text-sm py-0.5 cursor-pointer transition-colors"
-                title={`Click to set ${nextValue.toString().padStart(2, '0')}`}
-            >
-                {nextValue.toString().padStart(2, '0')}
-            </div>
-
-            {/* Current Active Selected Number */}
-            <div
-                className="my-1 py-1 px-2.5 rounded-lg border font-mono text-2xl font-black tracking-tight text-white transition-all shadow-md"
-                style={{
-                    backgroundColor: 'rgba(255, 255, 255, 0.08)',
-                    borderColor: 'var(--color-widget-active)',
-                    color: 'var(--color-widget-text)',
-                    boxShadow: '0 0 14px rgba(9, 119, 147, 0.35)'
-                }}
-            >
-                {value.toString().padStart(2, '0')}
-            </div>
-
-            {/* Lower number (Smaller / Previous) */}
-            <div
-                onClick={stepDown}
-                className="text-white/30 hover:text-white/70 font-mono text-sm py-0.5 cursor-pointer transition-colors"
-                title={`Click to set ${prevValue.toString().padStart(2, '0')}`}
-            >
-                {prevValue.toString().padStart(2, '0')}
-            </div>
-
-            {/* Bottom Chevron Down */}
-            <button
-                type="button"
-                onClick={stepDown}
-                className="text-white/30 hover:text-white p-1 rounded hover:bg-white/10 transition-colors cursor-pointer"
-                title={`Decrease ${label}`}
-            >
-                <ChevronDown size={16} />
-            </button>
-
-            {/* Column Label */}
-            <span className="text-[10px] uppercase font-bold text-white/50 tracking-wider mt-1">
-                {label}
-            </span>
-        </div>
-    );
-};
-
-export default function TimerView({ soundEnabled = true }) {
-    const [mode, setMode] = useState('timer'); // 'timer' | 'pomodoro'
-
-    // --- STANDARD TIMER CONFIGURATION (SLIDING WHEELS) ---
-    const [hours, setHours] = useState(0);       // Max 23
-    const [minutes, setMinutes] = useState(5);   // Max 59
-    const [seconds, setSeconds] = useState(0);   // Max 59
-
-    // --- ACTIVE COUNTDOWN STATE ---
-    const [timerRemaining, setTimerRemaining] = useState(300);
-    const [timerTotal, setTimerTotal] = useState(300);
-    const [isTimerRunning, setIsTimerRunning] = useState(false);
-    const [isTimerActive, setIsTimerActive] = useState(false); // true when in countdown mode
-
-    // --- POMODORO STATE ---
-    const [pomoPhase, setPomoPhase] = useState('focus'); // 'focus' | 'short' | 'long'
-    const [pomoRemaining, setPomoRemaining] = useState(25 * 60);
-    const [pomoTotal, setPomoTotal] = useState(25 * 60);
-    const [isPomoRunning, setIsPomoRunning] = useState(false);
-    const [completedCycles, setCompletedCycles] = useState(0);
-
-    const timerIntervalRef = useRef(null);
-    const pomoIntervalRef = useRef(null);
-
-    // Format seconds into MM:SS or HH:MM:SS
-    const formatTime = (totalSecs) => {
-        const hrs = Math.floor(totalSecs / 3600);
-        const mins = Math.floor((totalSecs % 3600) / 60);
-        const secs = totalSecs % 60;
-
-        if (hrs > 0) {
-            return `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-        }
-        return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-    };
-
-    useEffect(() => {
-        if (isTimerRunning) {
-            timerIntervalRef.current = setInterval(() => {
-                setTimerRemaining((prev) => {
-                    if (prev <= 1) {
-                        clearInterval(timerIntervalRef.current);
-                        setIsTimerRunning(false);
-                        if (soundEnabled) playChime('timer');
-                        return 0;
-                    }
-                    return prev - 1;
-                });
-            }, 1000);
-        } else {
-            clearInterval(timerIntervalRef.current);
-        }
-        return () => clearInterval(timerIntervalRef.current);
-    }, [isTimerRunning, soundEnabled]);
-
-    const handleStartFromPicker = () => {
-        const total = hours * 3600 + minutes * 60 + seconds;
-        if (total === 0) {
-            // Default to 5 minutes if left at 00:00:00
-            setMinutes(5);
-            setTimerTotal(300);
-            setTimerRemaining(300);
-        } else {
-            setTimerTotal(total);
-            setTimerRemaining(total);
-        }
-        setIsTimerActive(true);
-        setIsTimerRunning(true);
-    };
-
-    const handleCancelRunning = () => {
-        setIsTimerRunning(false);
-        setIsTimerActive(false);
-        const h = Math.min(23, Math.floor(timerTotal / 3600));
-        const m = Math.floor((timerTotal % 3600) / 60);
-        const s = timerTotal % 60;
-        setHours(h);
-        setMinutes(m);
-        setSeconds(s);
-    };
-
-    useEffect(() => {
-        if (isPomoRunning) {
-            pomoIntervalRef.current = setInterval(() => {
-                setPomoRemaining((prev) => {
-                    if (prev <= 1) {
-                        clearInterval(pomoIntervalRef.current);
-                        setIsPomoRunning(false);
-
-                        if (pomoPhase === 'focus') {
-                            const newCycles = completedCycles + 1;
-                            setCompletedCycles(newCycles);
-                            if (soundEnabled) playChime('timer');
-                            if (newCycles % 4 === 0) {
-                                switchPomoPhase('long');
-                            } else {
-                                switchPomoPhase('short');
-                            }
-                        } else {
-                            if (soundEnabled) playChime('break');
-                            switchPomoPhase('focus');
-                        }
-                        return 0;
-                    }
-                    return prev - 1;
-                });
-            }, 1000);
-        } else {
-            clearInterval(pomoIntervalRef.current);
-        }
-        return () => clearInterval(pomoIntervalRef.current);
-    }, [isPomoRunning, pomoPhase, completedCycles, soundEnabled]);
-
-    const switchPomoPhase = (newPhase) => {
-        setIsPomoRunning(false);
-        setPomoPhase(newPhase);
-        let duration = 25 * 60;
-        if (newPhase === 'short') duration = 5 * 60;
-        if (newPhase === 'long') duration = 15 * 60;
-        setPomoTotal(duration);
-        setPomoRemaining(duration);
-    };
-
-    const handleSkipPomoPhase = () => {
-        setIsPomoRunning(false);
-        if (pomoPhase === 'focus') {
-            switchPomoPhase('short');
-        } else {
-            switchPomoPhase('focus');
-        }
-    };
-
-    // SVG Circular calculations with spacious clearance
-    const radius = 78;
-    const circumference = 2 * Math.PI * radius;
-
-    const currentRemaining = mode === 'timer' ? timerRemaining : pomoRemaining;
-    const currentTotal = mode === 'timer' ? timerTotal : pomoTotal;
-    const progressPercent = currentTotal > 0 ? (currentRemaining / currentTotal) : 0;
-    const strokeDashoffset = circumference - (progressPercent * circumference);
-
+    // Helpers
+    formatTime,
+    radius,
+    strokeDashoffset,
+    circumference
+}) {
     return (
         <div className="flex-1 flex flex-col items-center justify-between p-3 select-none">
             {/* Top Sub-tabs (Timer vs Pomodoro) */}
@@ -315,7 +125,7 @@ export default function TimerView({ soundEnabled = true }) {
                         {/* Smaller, properly proportioned timer text with ample clearance */}
                         <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
                             <span className="font-mono text-xl font-bold tracking-tight text-white drop-shadow-md">
-                                {formatTime(timerRemaining)}
+                                {formatTime ? formatTime(timerRemaining) : timerRemaining}
                             </span>
                             <span className="text-[10px] tracking-widest uppercase font-semibold text-white/50 mt-1">
                                 {timerRemaining === 0 ? 'Completed' : (isTimerRunning ? 'Running' : 'Paused')}
@@ -351,7 +161,7 @@ export default function TimerView({ soundEnabled = true }) {
 
                     <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
                         <span className="font-mono text-xl font-bold tracking-tight text-white drop-shadow-sm">
-                            {formatTime(pomoRemaining)}
+                            {formatTime ? formatTime(pomoRemaining) : pomoRemaining}
                         </span>
                         <span className="text-[10px] tracking-wider uppercase font-semibold text-white/50 mt-1">
                             {pomoPhase === 'focus' ? 'Focus Session' : (pomoPhase === 'short' ? 'Short Break' : 'Long Break')}
@@ -371,7 +181,7 @@ export default function TimerView({ soundEnabled = true }) {
                     <div className="w-full flex items-center justify-center gap-3 mb-2">
                         {(hours > 0 || minutes > 0 || seconds > 0) && (
                             <button
-                                onClick={() => { setHours(0); setMinutes(0); setSeconds(0); }}
+                                onClick={handleResetPicker}
                                 className="p-2.5 rounded-lg bg-white/5 hover:bg-white/15 text-white/60 hover:text-white border border-white/10 transition-all cursor-pointer"
                                 title="Reset time to 0"
                             >
@@ -404,7 +214,7 @@ export default function TimerView({ soundEnabled = true }) {
                         </button>
 
                         <button
-                            onClick={() => setIsTimerRunning(!isTimerRunning)}
+                            onClick={toggleTimerRunning}
                             className="px-12 py-2.5 rounded-lg font-bold text-sm shadow-md transition-all duration-200 hover:scale-105 active:scale-95 flex items-center gap-2 cursor-pointer"
                             style={{
                                 backgroundColor: 'var(--color-widget-active)',
@@ -469,7 +279,7 @@ export default function TimerView({ soundEnabled = true }) {
                         </button>
 
                         <button
-                            onClick={() => setIsPomoRunning(!isPomoRunning)}
+                            onClick={togglePomoRunning}
                             className="px-8 py-2 rounded-lg font-bold text-sm shadow-md transition-all duration-200 hover:scale-105 active:scale-95 flex items-center gap-2 cursor-pointer"
                             style={{
                                 backgroundColor: 'var(--color-widget-active)',

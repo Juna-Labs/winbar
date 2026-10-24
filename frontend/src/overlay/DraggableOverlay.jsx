@@ -44,13 +44,13 @@ const CATEGORY_MAP = {
     notepad: 'Notes',
     drawing: 'Notes',
 
+    timehub: 'Utility',
+
     companion: 'AI',
 
     serverinfo: 'Server',
     container: 'Server',
     terminal: 'Server',
-
-    timehub: 'Utility'
 };
 
 const ScrollableContainer = ({ children, maxWidthClass = 'max-w-[300px]' }) => {

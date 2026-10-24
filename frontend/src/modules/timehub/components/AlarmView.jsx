@@ -1,110 +1,21 @@
-import { useState, useEffect } from 'react';
 import { Plus, Bell, Trash2, Check, X, Clock } from 'lucide-react';
 
-const STORAGE_KEY = 'timehub_alarms';
-
-export default function AlarmView({ onTriggerAlarm }) {
-    const [alarms, setAlarms] = useState(() => {
-        try {
-            const saved = localStorage.getItem(STORAGE_KEY);
-            if (saved) return JSON.parse(saved);
-        } catch (e) {
-            console.error(e);
-        }
-        return [
-            { id: '1', time: '08:00', label: 'Morning Wakeup', enabled: true, repeat: 'everyday' },
-            { id: '2', time: '12:30', label: 'Lunch Break', enabled: false, repeat: 'weekdays' },
-        ];
-    });
-
-    const [isAdding, setIsAdding] = useState(false);
-    const [newTime, setNewTime] = useState('09:00');
-    const [newLabel, setNewLabel] = useState('');
-    const [newRepeat, setNewRepeat] = useState('everyday'); // 'everyday' | 'weekdays' | 'once'
-
-    const saveAlarms = (updated) => {
-        setAlarms(updated);
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-    };
-
-    const handleToggle = (id) => {
-        const updated = alarms.map(a => a.id === id ? { ...a, enabled: !a.enabled } : a);
-        saveAlarms(updated);
-    };
-
-    const handleDelete = (id) => {
-        const updated = alarms.filter(a => a.id !== id);
-        saveAlarms(updated);
-    };
-
-    const handleAddAlarm = (e) => {
-        e.preventDefault();
-        if (!newTime) return;
-
-        const newAlarm = {
-            id: Date.now().toString(),
-            time: newTime,
-            label: newLabel.trim() || 'Alarm',
-            enabled: true,
-            repeat: newRepeat
-        };
-
-        saveAlarms([...alarms, newAlarm]);
-        setIsAdding(false);
-        setNewLabel('');
-    };
-
-    // Calculate time until next enabled alarm
-    const getNextAlarmInfo = () => {
-        const enabledAlarms = alarms.filter(a => a.enabled);
-        if (enabledAlarms.length === 0) return null;
-
-        const now = new Date();
-        const currentHours = now.getHours();
-        const currentMinutes = now.getMinutes();
-        const currentTotalMinutes = currentHours * 60 + currentMinutes;
-
-        let closestMinutes = Infinity;
-        let closestAlarm = null;
-
-        enabledAlarms.forEach(alarm => {
-            const [h, m] = alarm.time.split(':').map(Number);
-            const alarmTotalMinutes = h * 60 + m;
-
-            let diff = alarmTotalMinutes - currentTotalMinutes;
-            if (diff <= 0) diff += 24 * 60; // next day
-
-            if (diff < closestMinutes) {
-                closestMinutes = diff;
-                closestAlarm = alarm;
-            }
-        });
-
-        if (!closestAlarm) return null;
-
-        const diffHours = Math.floor(closestMinutes / 60);
-        const diffMins = closestMinutes % 60;
-        const inTimeStr = diffHours > 0 ? `${diffHours}h ${diffMins}m` : `${diffMins}m`;
-
-        return {
-            alarm: closestAlarm,
-            inTimeStr
-        };
-    };
-
-    const nextAlarmInfo = getNextAlarmInfo();
-
-    // Format 24h 'HH:MM' into friendly format (e.g. 08:30 AM)
-    const formatAlarmTime = (timeStr) => {
-        const [h, m] = timeStr.split(':').map(Number);
-        const ampm = h >= 12 ? 'PM' : 'AM';
-        const displayH = h % 12 || 12;
-        return {
-            time: `${displayH}:${m.toString().padStart(2, '0')}`,
-            ampm
-        };
-    };
-
+export default function AlarmView({
+    alarms = [],
+    isAdding,
+    setIsAdding,
+    newTime,
+    setNewTime,
+    newLabel,
+    setNewLabel,
+    newRepeat,
+    setNewRepeat,
+    handleToggle,
+    handleDelete,
+    handleAddAlarm,
+    nextAlarmInfo,
+    formatAlarmTime
+}) {
     return (
         <div className="flex-1 flex flex-col justify-between p-3 select-none">
             {/* Top Status & Next Alarm Banner */}
@@ -115,7 +26,7 @@ export default function AlarmView({ onTriggerAlarm }) {
                         <span className="text-xs text-white/70">Next alarm in:</span>
                     </div>
                     <span className="text-xs font-mono font-bold" style={{ color: 'var(--color-widget-active)' }}>
-                        {nextAlarmInfo.inTimeStr} ({formatAlarmTime(nextAlarmInfo.alarm.time).time} {formatAlarmTime(nextAlarmInfo.alarm.time).ampm})
+                        {nextAlarmInfo.inTimeStr} ({formatAlarmTime ? formatAlarmTime(nextAlarmInfo.alarm.time).time : nextAlarmInfo.alarm.time} {formatAlarmTime ? formatAlarmTime(nextAlarmInfo.alarm.time).ampm : ''})
                     </span>
                 </div>
             ) : (
@@ -127,7 +38,7 @@ export default function AlarmView({ onTriggerAlarm }) {
             {/* Alarms List */}
             <div className="flex-1 overflow-y-auto scrollable flex flex-col gap-2 pr-0.5">
                 {alarms.map(alarm => {
-                    const formatted = formatAlarmTime(alarm.time);
+                    const formatted = formatAlarmTime ? formatAlarmTime(alarm.time) : { time: alarm.time, ampm: '' };
 
                     return (
                         <div
