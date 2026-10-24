@@ -48,7 +48,9 @@ const CATEGORY_MAP = {
 
     serverinfo: 'Server',
     container: 'Server',
-    terminal: 'Server'
+    terminal: 'Server',
+
+    timehub: 'Utility'
 };
 
 const ScrollableContainer = ({ children, maxWidthClass = 'max-w-[300px]' }) => {
