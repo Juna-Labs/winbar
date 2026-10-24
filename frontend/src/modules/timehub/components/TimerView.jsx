@@ -38,7 +38,7 @@ export default function TimerView({
     circumference
 }) {
     return (
-        <div className="flex-1 flex flex-col items-center justify-between p-3 select-none">
+        <div className="flex-1 flex flex-col items-center justify-between p-3 pb-5 select-none overflow-y-auto scrollable min-h-0">
             {/* Top Sub-tabs (Timer vs Pomodoro) */}
             <div className="flex bg-black/25 p-1 rounded-lg border border-white/10 gap-1 w-full max-w-70">
                 <button
@@ -135,7 +135,7 @@ export default function TimerView({
                 )
             ) : (
                 /* POMODORO CIRCLE */
-                <div className="relative flex items-center justify-center my-3 animate-in fade-in duration-200">
+                <div className="relative flex items-center justify-center my-2 animate-in fade-in duration-200">
                     <svg className="w-48 h-48 -rotate-90 transform" viewBox="0 0 192 192">
                         <circle
                             cx="96"

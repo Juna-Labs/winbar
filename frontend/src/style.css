@@ -46,6 +46,29 @@
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
+
+  .scrollable::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  .scrollable::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .scrollable::-webkit-scrollbar-thumb {
+    background: var(--color-widget);
+    border-radius: 10px;
+  }
+
+  .scrollable::-webkit-scrollbar-thumb:hover {
+    background: var(--color-widget-hover);
+  }
+
+  .scrollable {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-widget) transparent;
+  }
 }
 
 html {

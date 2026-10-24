@@ -24,9 +24,9 @@ export default function TimeHub() {
             className="flex flex-col text-white pointer-events-auto resize overflow-hidden relative shadow-2xl"
             style={{
                 width: '380px',
-                height: '490px',
+                height: '530px',
                 minWidth: '340px',
-                minHeight: '420px',
+                minHeight: '480px',
                 backgroundColor: 'rgba(8, 16, 39, 0.95)',
                 backdropFilter: 'blur(20px)'
             }}
@@ -115,14 +115,14 @@ export default function TimeHub() {
             </div>
 
             {/* Sub-view Container (Keep mounted to preserve state across tab switches, fully driven by useTimeHub props) */}
-            <div className="flex-1 overflow-hidden flex flex-col relative border-l border-white/10">
-                <div className={`flex-1 flex flex-col ${activeTab === 'timer' ? '' : 'hidden'}`}>
+            <div className="flex-1 overflow-hidden flex flex-col relative border-l border-white/10 min-h-0">
+                <div className={`flex-1 flex flex-col min-h-0 ${activeTab === 'timer' ? '' : 'hidden'}`}>
                     <TimerView {...timer} />
                 </div>
-                <div className={`flex-1 flex flex-col ${activeTab === 'stopwatch' ? '' : 'hidden'}`}>
+                <div className={`flex-1 flex flex-col min-h-0 ${activeTab === 'stopwatch' ? '' : 'hidden'}`}>
                     <StopwatchView {...stopwatch} />
                 </div>
-                <div className={`flex-1 flex flex-col ${activeTab === 'alarm' ? '' : 'hidden'}`}>
+                <div className={`flex-1 flex flex-col min-h-0 ${activeTab === 'alarm' ? '' : 'hidden'}`}>
                     <AlarmView {...alarms} />
                 </div>
             </div>

@@ -45,6 +45,7 @@ const CATEGORY_MAP = {
     drawing: 'Notes',
 
     timehub: 'Utility',
+    calculator: 'Utility',
 
     companion: 'AI',
 

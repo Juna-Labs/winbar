@@ -87,7 +87,8 @@ Available modules:
 - `terminal`: A CLI terminal launcher that can automatically launch your server terminal (The server private key is needed to work)
 
 ---
-- `timehub`: Time suite containing a Countdown Timer with quick presets, Pomodoro focus mode, Stopwatch with lap timing, and persistent Alarms.
+- `timehub`: Time suite containing a Countdown Timer, Pomodoro focus mode, Stopwatch with lap timing, and persistent Alarms.
+- `calculator`: Fast desktop calculator with calculation history and quick multi-unit converter (Programmer bases, Storage, CSS rem/px, and physical units).
 
 ## Additional Settings
 
