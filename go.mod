@@ -8,7 +8,7 @@ require (
 	github.com/itchyny/volume-go v0.2.3
 	github.com/lxn/win v0.0.0-20210218163916-a377121e959e
 	github.com/shirou/gopsutil/v4 v4.26.9
-	github.com/wailsapp/wails/v2 v2.17.0
+	github.com/wailsapp/wails/v2 v2.17.1
 	golang.org/x/sys v0.49.0
 	gopkg.in/yaml.v2 v2.4.0
 )
